@@ -167,5 +167,5 @@ export default function evaluateExpression(expression: string, symbols: Symbol[]
     evaluateParenthesis(tokens);
     evaluateTokens(tokens);    
 
-    return parseFloat(tokens[0].value);
+    return parseInt(tokens[0].value);
 }
