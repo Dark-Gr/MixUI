@@ -1,6 +1,7 @@
-import type { Symbol } from "../ExpressionParser";
-import evaluateExpression from "../ExpressionParser";
-import type { Character } from "../RenderingBuffer";
+import { hexToAnsi } from "../Utils/ColorConverter";
+import type { Symbol } from "../Utils/ExpressionParser";
+import evaluateExpression from "../Utils/ExpressionParser";
+import type { Character } from "../Utils/RenderingBuffer";
 import MixNode, { type NodeOptions } from "./MixNode";
 
 export type ElementOptions = {
@@ -9,8 +10,13 @@ export type ElementOptions = {
     width: string | number;
     height: string | number;
 
-    foregroundColor?: string;
-    backgroundColor?: string;
+    style?: {
+        border?: {
+            foregroundColor?: string | "white";
+            backgroundColor?: string | "white";
+        },
+        backgroundColor?: string | "white";
+    }
 } & NodeOptions;
 
 export default abstract class MixElement extends MixNode {
@@ -65,16 +71,28 @@ export default abstract class MixElement extends MixNode {
 
     }
 
-    protected fillRect(x: number, y: number, width: number, height: number) {
-        this.drawLine(x, y, x + width, y, { character: "─" });
-        this.drawLine(x, y, x, y + height, { character: "│" });
-        this.drawLine(x + width, y, x + width, y + height, { character: "│", });
-        this.drawLine(x, y + height, x + width, y + height, { character: "─" });
+    protected outlineRect(x: number, y: number, width: number, height: number, foregroundColor: string, backgroundColor: string) {
+        const foreground = hexToAnsi(foregroundColor);
+        const background = hexToAnsi(backgroundColor);
 
-        this._renderingBuffer.insert({ character: "┌" }, x, y);
-        this._renderingBuffer.insert({ character: "┐" }, x + width, y);
-        this._renderingBuffer.insert({ character: "└" }, x, y + height);
-        this._renderingBuffer.insert({ character: "┘" }, x + width, y + height);
+        this.drawLine(x, y, x + width, y, { character: "─", foregroundColor: foreground, backgroundColor: background });
+        this.drawLine(x, y, x, y + height, { character: "│", foregroundColor: foreground, backgroundColor: background });
+        this.drawLine(x + width, y, x + width, y + height, { character: "│", foregroundColor: foreground, backgroundColor: background });
+        this.drawLine(x, y + height, x + width, y + height, { character: "─", foregroundColor: foreground, backgroundColor: background });
+
+        this._renderingBuffer.insert({ character: "┌", foregroundColor: foreground, backgroundColor: background }, x, y);
+        this._renderingBuffer.insert({ character: "┐", foregroundColor: foreground, backgroundColor: background }, x + width, y);
+        this._renderingBuffer.insert({ character: "└", foregroundColor: foreground, backgroundColor: background }, x, y + height);
+        this._renderingBuffer.insert({ character: "┘", foregroundColor: foreground, backgroundColor: background }, x + width, y + height);
+    }
+
+    protected fillRect(x: number, y: number, width: number, height: number, backgroundColor: string) {
+        const background = hexToAnsi(backgroundColor);
+
+        for(let i = x; i < x + width; i++) {
+            for(let j = y; j < y + height; j++)
+                this._renderingBuffer.insert({ character: " ", backgroundColor: background }, i, j);
+        }
     }
 
     public getWidth(): number {

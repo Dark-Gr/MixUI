@@ -1,5 +1,5 @@
 import * as readline from "readline";
-import { clearScreenAndResetCursor, hideBlinkCursor, showBlinkCursor, switchToAlternateTerminalBuffer, switchToMainTerminalBuffer } from "../TerminalController";
+import { clearScreenAndResetCursor, hideBlinkCursor, showBlinkCursor, switchToAlternateTerminalBuffer, switchToMainTerminalBuffer } from "../Utils/TerminalController";
 import MixNode from "./MixNode";
 
 type KeyboardEvenHandler = {

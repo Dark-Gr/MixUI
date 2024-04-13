@@ -7,8 +7,11 @@ const box = new MixBox({
     left: "{parent-width} * 0.125",
     width: "{parent-width} * 0.75",
     height: "{parent-height} * 0.5",
-    foregroundColor: "#ff0000",
-    backgroundColor: "#00ff00",
+    style: {
+        border: {
+            foregroundColor: "#3277a8"
+        }
+    }
 });
 
 const box2 = new MixBox({
@@ -16,8 +19,11 @@ const box2 = new MixBox({
     left: 2,
     width: "{parent-width} - 4",
     height: "{parent-height} - 2",
-    foregroundColor: "#0000ff",
-    backgroundColor: "#ff00ff",
+    style: {
+        border: {
+            foregroundColor: "#db2a5f"
+        }
+    }
 });
 
 const box3 = new MixBox({
@@ -25,8 +31,12 @@ const box3 = new MixBox({
     left: 2,
     width: "{parent-width} - 4",
     height: "{parent-height} - 2",
-    foregroundColor: "#0000ff",
-    backgroundColor: "#ff00ff",
+    style: {
+        border: {
+            foregroundColor: "#2adb59",
+        },
+        backgroundColor: "#2adbb5"
+    }
 });
 
 display.onKeyPress(["q"], () => process.exit(0));

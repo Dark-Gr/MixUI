@@ -1,4 +1,4 @@
-import RenderingBuffer from "../RenderingBuffer";
+import RenderingBuffer from "../Utils/RenderingBuffer";
 import EventEmitter from "node:events";
 import MixDisplay from "./MixDisplay";
 

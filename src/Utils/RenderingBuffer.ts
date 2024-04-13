@@ -100,6 +100,8 @@ export default class RenderingBuffer {
                     hadStyle = false;
                 }
 
+                if(currentCharacter.foregroundColor && currentCharacter.foregroundColor !== "white") style += `${ESC}[38;5;${currentCharacter.foregroundColor}m`;
+                if(currentCharacter.backgroundColor && currentCharacter.backgroundColor !== "white") style += `${ESC}[48;5;${currentCharacter.backgroundColor}m`;
                 if(currentCharacter.bold) style += `${ESC}[1m`;
                 if(currentCharacter.italic) style += `${ESC}[3m`;
                 if(currentCharacter.underline) style += `${ESC}[4m`;
@@ -118,7 +120,9 @@ export default class RenderingBuffer {
         if(a === null && b === null) return true;
         if(a === null || b === null) return false;
 
-        return a.bold == b.bold &&
+        return a.foregroundColor == b.foregroundColor &&
+            a.backgroundColor == b.backgroundColor &&
+            a.bold == b.bold &&
             a.italic == b.italic &&
             a.underline == b.underline &&
             a.strikethrough == b.strikethrough;
