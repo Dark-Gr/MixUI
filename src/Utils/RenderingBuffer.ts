@@ -2,8 +2,8 @@ import { ESC } from "./TerminalController";
 
 export type Character = {
     character: string;
-    foregroundColor?: "white" | number;
-    backgroundColor?: "white" | number;
+    foregroundColor?: "default" | number;
+    backgroundColor?: "default" | number;
     bold?: boolean;
     italic?: boolean;
     underline?: boolean;
@@ -32,7 +32,7 @@ export default class RenderingBuffer {
         this.buffer.push(...data);
     }
 
-    public insert(character: Character, x: number, y: number) {
+    public insertSingle(character: Character, x: number, y: number) {
         if(this.isReadonly())
             throw new Error("Cannot insert into a readonly buffer");
 
@@ -41,26 +41,26 @@ export default class RenderingBuffer {
 
         this.buffer[y * this.width + x] = { character, x, y };
     }
+    
+    public insertBuffer(other: RenderingBuffer) {
+        if (this.isReadonly())
+            throw new Error("Cannot insert into a readonly buffer");
+
+        for (let i = 0; i < this.buffer.length; i++) {
+            const x = i % this.width;
+            const y = (i - x) / this.width;
+
+            const otherElement = other.query(x, y) || null;
+            if (otherElement !== null)
+                this.buffer[i] = otherElement;
+        }
+    }
 
     public query(x: number, y: number): CellInfo | null | undefined {
         if(x < 0 || x >= this.width || y < 0 || y >= this.height)
             return undefined;
 
         return this.buffer[y * this.width + x] || null;
-    }
-
-    public insertBuffer(other: RenderingBuffer) {
-        if(this.isReadonly())
-            throw new Error("Cannot insert into a readonly buffer");
-
-        for(let i = 0; i < this.buffer.length; i++) {
-            const x = i % this.width;
-            const y = (i - x) / this.width;
-
-            const otherElement = other.query(x, y) || null;
-            if(otherElement !== null)
-                this.buffer[i] = otherElement;
-        }
     }
 
     public toANSIString() {
@@ -100,8 +100,8 @@ export default class RenderingBuffer {
                     hadStyle = false;
                 }
 
-                if(currentCharacter.foregroundColor && currentCharacter.foregroundColor !== "white") style += `${ESC}[38;5;${currentCharacter.foregroundColor}m`;
-                if(currentCharacter.backgroundColor && currentCharacter.backgroundColor !== "white") style += `${ESC}[48;5;${currentCharacter.backgroundColor}m`;
+                if(currentCharacter.foregroundColor && currentCharacter.foregroundColor !== "default") style += `${ESC}[38;5;${currentCharacter.foregroundColor}m`;
+                if(currentCharacter.backgroundColor && currentCharacter.backgroundColor !== "default") style += `${ESC}[48;5;${currentCharacter.backgroundColor}m`;
                 if(currentCharacter.bold) style += `${ESC}[1m`;
                 if(currentCharacter.italic) style += `${ESC}[3m`;
                 if(currentCharacter.underline) style += `${ESC}[4m`;
@@ -135,11 +135,12 @@ export default class RenderingBuffer {
         this.width = width;
         this.height = height;
 
-        this.buffer = new Array(width * height); // Recreate the buffer with the new size
+        this.clear();
     }
 
     public clear() {
-        this.buffer.fill(null);
+        this.buffer.length = 0;
+        this.buffer.length = this.width * this.height;
     }
 
     public asReadOnly() {

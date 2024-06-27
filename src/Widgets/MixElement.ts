@@ -9,14 +9,6 @@ export type ElementOptions = {
     left: string | number;
     width: string | number;
     height: string | number;
-
-    style?: {
-        border?: {
-            foregroundColor?: string | "white";
-            backgroundColor?: string | "white";
-        },
-        backgroundColor?: string | "white";
-    }
 } & NodeOptions;
 
 export default abstract class MixElement extends MixNode {
@@ -59,6 +51,14 @@ export default abstract class MixElement extends MixNode {
     }
 
     protected drawLine(x1: number, y1: number, x2: number, y2: number, character: Character) {
+        if(x1 !== x2 && y1 !== y2)
+            throw new Error("Cannot draw a diagonal line");
+
+        if(x1 === x2 && y1 === y2) {
+            this._renderingBuffer.insertSingle(character, x1, y1);
+            return;
+        }
+
         let xStart = Math.min(x1, x2);
         let xEnd = Math.max(x1, x2);
         let yStart = Math.min(y1, y2);
@@ -66,12 +66,11 @@ export default abstract class MixElement extends MixNode {
 
         for(let x = xStart; x <= xEnd; x++) {
             for(let y = yStart; y <= yEnd; y++)
-                this._renderingBuffer.insert(character, x, y);
+                this._renderingBuffer.insertSingle(character, x, y);
         }
-
     }
 
-    protected outlineRect(x: number, y: number, width: number, height: number, foregroundColor: string, backgroundColor: string) {
+    protected outlineRect(x: number, y: number, width: number, height: number, foregroundColor: string, backgroundColor: string, roundedCorners: boolean = false) {
         const foreground = hexToAnsi(foregroundColor);
         const background = hexToAnsi(backgroundColor);
 
@@ -80,10 +79,10 @@ export default abstract class MixElement extends MixNode {
         this.drawLine(x + width, y, x + width, y + height, { character: "│", foregroundColor: foreground, backgroundColor: background });
         this.drawLine(x, y + height, x + width, y + height, { character: "─", foregroundColor: foreground, backgroundColor: background });
 
-        this._renderingBuffer.insert({ character: "┌", foregroundColor: foreground, backgroundColor: background }, x, y);
-        this._renderingBuffer.insert({ character: "┐", foregroundColor: foreground, backgroundColor: background }, x + width, y);
-        this._renderingBuffer.insert({ character: "└", foregroundColor: foreground, backgroundColor: background }, x, y + height);
-        this._renderingBuffer.insert({ character: "┘", foregroundColor: foreground, backgroundColor: background }, x + width, y + height);
+        this._renderingBuffer.insertSingle({ character: roundedCorners ? "╭" : "┌", foregroundColor: foreground, backgroundColor: background }, x, y);
+        this._renderingBuffer.insertSingle({ character: roundedCorners ? "╮" : "┐", foregroundColor: foreground, backgroundColor: background }, x + width, y);
+        this._renderingBuffer.insertSingle({ character: roundedCorners ? "╰" : "└", foregroundColor: foreground, backgroundColor: background }, x, y + height);
+        this._renderingBuffer.insertSingle({ character: roundedCorners ? "╯" : "┘", foregroundColor: foreground, backgroundColor: background }, x + width, y + height);
     }
 
     protected fillRect(x: number, y: number, width: number, height: number, backgroundColor: string) {
@@ -91,7 +90,7 @@ export default abstract class MixElement extends MixNode {
 
         for(let i = x; i < x + width; i++) {
             for(let j = y; j < y + height; j++)
-                this._renderingBuffer.insert({ character: " ", backgroundColor: background }, i, j);
+                this._renderingBuffer.insertSingle({ character: " ", backgroundColor: background }, i, j);
         }
     }
 

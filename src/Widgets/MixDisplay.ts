@@ -13,6 +13,7 @@ export default class MixDisplay extends MixNode {
     private onAlternateTerminalBuffer = false;
 
     private keyboardHandlers: KeyboardEvenHandler[];
+    private currentlyRendering: boolean = false;
 
     constructor() {
         super();
@@ -48,13 +49,21 @@ export default class MixDisplay extends MixNode {
     }
 
     public override render(): void {
-        super.render();
+        if(this.currentlyRendering) return;
 
+        this.currentlyRendering = true;
+        this.renderTree();
+        this.currentlyRendering = false;
+    }
+    
+    private renderTree() {
+        super.render();
+    
         if(!this.parent) { // Only render if we are the root node
             const renderString = this._renderingBuffer.toANSIString();
             clearScreenAndResetCursor();
             hideBlinkCursor();
-
+    
             process.stdout.write(renderString);
         }
     }
@@ -63,8 +72,10 @@ export default class MixDisplay extends MixNode {
         this._width = process.stdout.columns;
         this._height = process.stdout.rows;
 
-        this._renderingBuffer.resize(this._width, this._height);
-        this.emit("buffer-resize", this._width, this._height);
+        if(!this.currentlyRendering) {
+            this._renderingBuffer.resize(this._width, this._height);
+            this.emit("buffer-resize", this._width, this._height);
+        }
         
         this.render();
     }
